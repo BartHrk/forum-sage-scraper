@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -39,7 +39,7 @@ const Index = () => {
     setIsProcessing(true);
     try {
       // Send request to Ollama server
-      const response = await fetch('http://localhost:11434/api/generate', {
+      const response = await fetch('http://77.237.11.39:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
