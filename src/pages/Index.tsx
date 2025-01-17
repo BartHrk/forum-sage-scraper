@@ -45,7 +45,7 @@ const Index = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "huihui_ai/command-r7b-abliterated",
+          model: "huihui_ai/phi4-abliterated:14b-q8_0",
           prompt: `URL: ${values.webpageUrl}\nTask: ${values.prompt}`,
           stream: false
         }),

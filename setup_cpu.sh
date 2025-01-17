@@ -32,7 +32,7 @@ curl https://ollama.ai/install.sh | sh
 mkdir -p /etc/ollama
 cat > /etc/ollama/config.yaml << EOF
 runner:
-  model: "huihui_ai/command-r7b-abliterated"
+  model: "huihui_ai/phi4-abliterated:14b-q8_0"
   threads: 144  # Using all available threads
   parallel_requests: 8
 server:

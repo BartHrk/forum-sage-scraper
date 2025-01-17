@@ -16,7 +16,7 @@ bash setup_cpu.sh
 
 # Step 3: Pull the LLM model
 echo "Pulling the LLM model..."
-ollama pull huihui_ai/command-r7b-abliterated
+ollama pull huihui_ai/phi4-abliterated:14b-q8_0
 
 # Step 4: Start the web application
 echo "Starting the web application..."
