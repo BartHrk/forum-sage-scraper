@@ -16,29 +16,28 @@ import { Textarea } from "@/components/ui/textarea";
 import * as z from "zod";
 import { useState } from "react";
 
-// Form validation schema
 const formSchema = z.object({
   webpageUrl: z.string().url({ message: "Please enter a valid URL" }),
   prompt: z.string().min(10, { message: "Prompt must be at least 10 characters" }),
+  outputFile: z.string().min(1, { message: "Please specify an output file path" }),
 });
 
 const Index = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       webpageUrl: "",
       prompt: "",
+      outputFile: "/var/log/ollama/results.txt",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsProcessing(true);
     try {
-      // Send request to Ollama server
       const response = await fetch('http://77.237.11.39:11434/api/generate', {
         method: 'POST',
         headers: {
@@ -46,7 +45,7 @@ const Index = () => {
         },
         body: JSON.stringify({
           model: "huihui_ai/phi4-abliterated:14b-q8_0",
-          prompt: `URL: ${values.webpageUrl}\nTask: ${values.prompt}`,
+          prompt: `URL: ${values.webpageUrl}\nTask: ${values.prompt}\nOutput File: ${values.outputFile}`,
           stream: false
         }),
       });
@@ -57,9 +56,21 @@ const Index = () => {
 
       const data = await response.json();
       
+      // Write results to file
+      await fetch('http://77.237.11.39:4040/api/write-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filePath: values.outputFile,
+          content: data.response
+        }),
+      });
+
       toast({
         title: "Processing Complete",
-        description: "The webpage has been processed successfully.",
+        description: `Results have been saved to ${values.outputFile}`,
       });
       
       console.log("Ollama response:", data);
@@ -120,6 +131,26 @@ const Index = () => {
                   </FormControl>
                   <FormDescription>
                     Describe what information you want to extract from the webpage.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="outputFile"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Output File Path</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="/var/log/ollama/results.txt" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Specify where to save the results.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

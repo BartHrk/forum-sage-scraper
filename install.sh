@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Main installation script for CPU-based web scraper
-
 echo "Starting installation of CPU-based web scraper..."
 
 # Step 1: Run cleanup script if GPU version exists
@@ -14,11 +13,19 @@ fi
 echo "Setting up CPU-optimized environment..."
 bash setup_cpu.sh
 
-# Step 3: Pull the LLM model
+# Step 3: Wait for Ollama service to start
+echo "Waiting for Ollama service to start..."
+sleep 10
+
+# Step 4: Pull the LLM model
 echo "Pulling the LLM model..."
 ollama pull huihui_ai/phi4-abliterated:14b-q8_0
 
-# Step 4: Start the web application
+# Step 5: Create application directory
+mkdir -p /opt/scraper-app
+cd /opt/scraper-app
+
+# Step 6: Start the web application
 echo "Starting the web application..."
 npm install
 npm run build

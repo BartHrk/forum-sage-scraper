@@ -1,18 +1,12 @@
 #!/bin/bash
 
-# CPU Configuration for Dual Xeon E5-2699V3 (36 cores/72 threads per CPU)
-# Total RAM: 288GB DDR4 @ 2133MHz
-
 # Install required packages
-apt-get update && apt-get install -y \
-    curl \
-    wget \
-    htop \
-    numactl
+apt-get update
+apt-get install -y curl wget htop numactl
 
 # Configure CPU governor for performance
 for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
-    echo "performance" > $cpu
+    echo "performance" > $cpu 2>/dev/null || true
 done
 
 # Configure system memory limits
@@ -25,11 +19,14 @@ EOF
 
 sysctl -p /etc/sysctl.d/99-memory.conf
 
+# Create necessary directories
+mkdir -p /etc/ollama
+mkdir -p /var/log/ollama
+
 # Install Ollama
-curl https://ollama.ai/install.sh | sh
+curl https://ollama.ai/install.sh | bash
 
 # Configure Ollama for CPU optimization
-mkdir -p /etc/ollama
 cat > /etc/ollama/config.yaml << EOF
 runner:
   model: "huihui_ai/phi4-abliterated:14b-q8_0"
@@ -39,7 +36,7 @@ server:
   host: "77.237.11.39"
   port: 11434
 system:
-  cpu_memory: 262144  # Allocate 256GB for model (leaving some for system)
+  cpu_memory: 262144  # Allocate 256GB for model
 EOF
 
 # Create CPU monitoring script
@@ -57,8 +54,7 @@ EOF
 
 chmod +x /usr/local/bin/monitor-cpu.sh
 
-# Start Ollama service with CPU affinity
-systemctl stop ollama
+# Configure Ollama service
 cat > /etc/systemd/system/ollama.service << EOF
 [Unit]
 Description=Ollama Service
@@ -81,4 +77,4 @@ systemctl start ollama
 # Start CPU monitoring
 /usr/local/bin/monitor-cpu.sh &
 
-echo "CPU setup completed. Ollama server running at http://77.237.11.39:4040"
+echo "CPU setup completed. Ollama server running at http://77.237.11.39:11434"

@@ -15,5 +15,6 @@ apt-get autoremove -y
 
 echo "Removing Ollama configuration..."
 rm -rf /etc/ollama
+rm -rf /usr/local/lib/ollama
 
 echo "Cleanup complete."
