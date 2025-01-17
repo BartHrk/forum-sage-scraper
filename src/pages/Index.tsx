@@ -39,7 +39,7 @@ const Index = () => {
     setIsProcessing(true);
     try {
       // First, generate the response from Ollama
-      const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
+      const ollamaResponse = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ const Index = () => {
       const ollamaData = await ollamaResponse.json();
       
       // Then, write the results to the specified file
-      const writeResponse = await fetch('http://localhost:4040/api/write', {
+      const writeResponse = await fetch('/api/write', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
