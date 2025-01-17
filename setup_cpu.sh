@@ -24,46 +24,34 @@ mkdir -p /etc/ollama
 mkdir -p /var/log/ollama
 
 # Install Ollama
-curl https://ollama.ai/install.sh | bash
+curl https://ollama.ai/install.sh | sh
+
+# Wait for Ollama binary to be available
+sleep 5
 
 # Configure Ollama for CPU optimization
 cat > /etc/ollama/config.yaml << EOF
 runner:
   model: "huihui_ai/phi4-abliterated:14b-q8_0"
-  threads: 144  # Using all available threads
+  threads: 144
   parallel_requests: 8
 server:
-  host: "77.237.11.39"
+  host: "0.0.0.0"
   port: 11434
 system:
-  cpu_memory: 262144  # Allocate 256GB for model
+  cpu_memory: 262144
 EOF
 
-# Create CPU monitoring script
-cat > /usr/local/bin/monitor-cpu.sh << 'EOF'
-#!/bin/bash
-LOG_DIR="/var/log/ollama"
-mkdir -p $LOG_DIR
-
-while true; do
-    mpstat -P ALL 1 1 >> "$LOG_DIR/cpu_metrics.log"
-    free -m >> "$LOG_DIR/memory_metrics.log"
-    sleep 30
-done
-EOF
-
-chmod +x /usr/local/bin/monitor-cpu.sh
-
-# Configure Ollama service
+# Create systemd service
 cat > /etc/systemd/system/ollama.service << EOF
 [Unit]
 Description=Ollama Service
 After=network-online.target
 
 [Service]
-ExecStart=numactl --interleave=all /usr/bin/ollama serve
+ExecStart=/usr/local/bin/ollama serve
 Restart=always
-Environment="OLLAMA_HOST=77.237.11.39"
+Environment="OLLAMA_HOST=0.0.0.0"
 Environment="OLLAMA_PORT=11434"
 
 [Install]
@@ -74,7 +62,7 @@ systemctl daemon-reload
 systemctl enable ollama
 systemctl start ollama
 
-# Start CPU monitoring
-/usr/local/bin/monitor-cpu.sh &
+# Wait for Ollama service to start
+sleep 10
 
-echo "CPU setup completed. Ollama server running at http://77.237.11.39:11434"
+echo "CPU setup completed. Ollama server running at http://localhost:11434"
