@@ -38,50 +38,55 @@ const Index = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsProcessing(true);
     try {
-      const response = await fetch('http://77.237.11.39:11434/api/generate', {
+      // First, generate the response from Ollama
+      const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "huihui_ai/phi4-abliterated:14b-q8_0",
-          prompt: `URL: ${values.webpageUrl}\nTask: ${values.prompt}\nOutput File: ${values.outputFile}`,
+          model: "llama2",
+          prompt: `URL: ${values.webpageUrl}\nTask: ${values.prompt}`,
           stream: false
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to process request');
+      if (!ollamaResponse.ok) {
+        throw new Error('Failed to get response from Ollama');
       }
 
-      const data = await response.json();
+      const ollamaData = await ollamaResponse.json();
       
-      // Write results to file
-      await fetch('http://77.237.11.39:4040/api/write-results', {
+      // Then, write the results to the specified file
+      const writeResponse = await fetch('http://localhost:4040/api/write', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           filePath: values.outputFile,
-          content: data.response
+          content: ollamaData.response
         }),
       });
 
+      if (!writeResponse.ok) {
+        throw new Error('Failed to write results to file');
+      }
+
       toast({
-        title: "Processing Complete",
+        title: "Success",
         description: `Results have been saved to ${values.outputFile}`,
       });
       
-      console.log("Ollama response:", data);
+      console.log("Processing complete:", ollamaData);
       
     } catch (error) {
+      console.error("Error details:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to process the webpage. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process the webpage. Please try again.",
       });
-      console.error("Error:", error);
     } finally {
       setIsProcessing(false);
     }
